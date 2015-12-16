@@ -22,11 +22,14 @@ NS_ASSUME_NONNULL_BEGIN
     __weak _cache_node *_tail;
     
     int _count;
+    
+    BOOL _releaseOnMainThread;
+    BOOL _releaseAsynchronously;
 }
 
 - (void)appendNode:(_cache_node *)node;
 
-- (_cache_node *)removeNode:(_cache_node *)node;
+- (void)removeNode:(_cache_node *)node;
 
 - (nullable _cache_node *)removeHeadNode;
 

@@ -8,8 +8,10 @@
 
 #import "_cache_linked_list.h"
 #import <CoreFoundation/CoreFoundation.h>
+#import <QuartzCore/QuartzCore.h>
 
 #import <libkern/OSAtomic.h>
+#import <pthread.h>
 
 @interface _cache_node : NSObject
 {
@@ -34,6 +36,10 @@
 - (instancetype)init {
     if (self = [super init]) {
         _dic = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        
+        // by default
+        _releaseOnMainThread = NO;
+        _releaseAsynchronously = YES;
     }
     return self;
 }
@@ -57,7 +63,7 @@
     _count ++;
 }
 
-- (_cache_node *)removeNode:(_cache_node *)node {
+- (void)removeNode:(_cache_node *)node {
     
     CFDictionaryRemoveValue(_dic, (__bridge const void *)(node->_key));
     
@@ -74,12 +80,66 @@
         _tail = node->_prev;
     }
     _count --;
-    return node;
 }
 
 - (nullable _cache_node *)removeHeadNode {
     
-    return _head;
+    if (!_head) { return nil; }
+    
+    _cache_node *removedNode = _head;
+    CFDictionaryRemoveValue(_dic, (__bridge const void *)(removedNode->_key));
+    
+    if (_head == _tail) {
+        _head = _tail = nil;
+    } else {
+        _head = _head->_next;
+        _head->_prev = nil;
+    }
+    _count --;
+    return removedNode;
+}
+
+- (void)freshNode:(_cache_node *)node {
+    
+    node->_time = CACurrentMediaTime();
+    
+    if (_tail == node) { return; }
+    
+    if (node->_prev) {
+        node->_prev->_next = node->_next;
+    }
+    if (node->_next) {
+        node->_next->_prev = node->_prev;
+    }
+    node->_prev = _tail;
+    node->_next = nil;
+    _tail->_next = node;
+    _tail = node;
+}
+
+- (void)removeAllNodes {
+    
+    if (CFDictionaryGetCount(_dic) > 0) {
+        
+        CFMutableDictionaryRef holder = _dic;
+        _dic = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        
+        if (_releaseAsynchronously) {
+            dispatch_queue_t queue = _releaseOnMainThread ? dispatch_get_main_queue() : (dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0));
+            dispatch_async(queue, ^{
+                CFRelease(holder);
+            });
+        } else if (_releaseOnMainThread && !pthread_main_np()) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                CFRelease(holder);
+            });
+        } else {
+            CFRelease(holder);
+        }
+    }
+    _head = nil;
+    _tail = nil;
+    _count = 0;
 }
 
 @end
