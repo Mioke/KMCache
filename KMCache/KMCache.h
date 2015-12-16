@@ -24,9 +24,29 @@ typedef NS_OPTIONS(int, KMCacheType) {
 
 - (instancetype)initWithType:(KMCacheType)type;
 
-- (BOOL)setCacheObject:(id)object forKey:(NSString *)key;
+/**
+ *  The max number of cached objects' count. By default, the max count is unlimited (NSIntegerMax).
+ */
+@property (nonatomic, assign) NSInteger maxCount;
 
-- (unsigned long long)size;
+/**
+ *  The max size of cached objects, unit is 'Mb'. By default, the max size is unlimited(NSIntegerMax).
+ */
+@property (nonatomic, assign) NSUInteger maxSize;
+
+/**
+ *  Cache object.
+ *
+ *  @param object object need to cache
+ *  @param key    key of cached object
+ *
+ *  @return succeed or not
+ */
+- (BOOL)setCacheObject:(id)object forKey:(NSString *)key;
+/**
+ *  The size of cached data
+ */
+- (NSUInteger)size;
 
 @end
 

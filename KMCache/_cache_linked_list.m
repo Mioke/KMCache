@@ -63,6 +63,16 @@
     _count ++;
 }
 
+- (void)appendNewNodeWithValue:(id)value key:(id)key {
+    
+    _cache_node *node = [_cache_node new];
+    node->_time = CACurrentMediaTime();
+    node->_value = value;
+    node->_key = key;
+    
+    [self appendNode:node];
+}
+
 - (void)removeNode:(_cache_node *)node {
     
     CFDictionaryRemoveValue(_dic, (__bridge const void *)(node->_key));
