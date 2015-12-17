@@ -30,7 +30,7 @@ typedef NS_OPTIONS(int, KMCacheType) {
 
 @interface KMCache : NSObject
 
-@property (nonatomic, assign) KMCacheType type;
+@property (nonatomic, assign, readonly) KMCacheType type;
 
 - (instancetype)initWithType:(KMCacheType)type;
 

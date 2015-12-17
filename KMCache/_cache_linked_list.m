@@ -11,7 +11,6 @@
 #import <QuartzCore/QuartzCore.h>
 
 #import <libkern/OSAtomic.h>
-#import <pthread.h>
 
 @implementation _cache_node
 @end

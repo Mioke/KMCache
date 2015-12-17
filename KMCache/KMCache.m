@@ -29,9 +29,10 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        self.type = KMCacheTypeDefualt;
+        _type = KMCacheTypeDefualt;
         self.maxCount = INT_MAX;
         self.maxSize = NSIntegerMax;
+        _lock = OS_SPINLOCK_INIT;
         
         self.releaseOnMainThread = NO;
         self.releaseAsynchronously = YES;
@@ -43,7 +44,7 @@
 
 - (instancetype)initWithType:(KMCacheType)type {
     if (self = [self init]) {
-        self.type = type;
+        _type = type;
     }
     return self;
 }
@@ -58,7 +59,18 @@
         [self.cacheList appendNewNodeWithValue:object key:key];
         
         if (self.cacheList->_count > self.maxCount) {
-            [self.cacheList removeHeadNode];
+            _cache_node *head = [self.cacheList removeHeadNode];
+            
+            if (self.releaseAsynchronously) {
+                dispatch_queue_t queue = self.releaseOnMainThread ? dispatch_get_main_queue() : dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+                dispatch_async(queue, ^{
+                    [head description];
+                });
+            } else if (self.releaseOnMainThread && !pthread_main_np()) {
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    [head description];
+                });
+            }
         }
         OSSpinLockUnlock(&_lock);
         return YES;
@@ -80,6 +92,16 @@
     return node->_value;
 }
 
+- (void)clean {
+    if (self.type == KMCacheTypeDefualt) {
+        return;
+    } else if (self.type == KMCacheTypeReleaseByTime) {
+        [self cleanCacheByTime];
+    } else if (self.type == KMCacheTypeReleaseBySize) {
+        [self cleanCacheBySize];
+    }
+}
+
 - (void)cleanAllCache {
     
     OSSpinLockLock(&_lock);
@@ -94,15 +116,32 @@
     }
     
     CFTimeInterval current = CACurrentMediaTime();
+    CFMutableArrayRef holder = CFArrayCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeArrayCallBacks);
+    
     OSSpinLockLock(&_lock);
     
     _cache_node *node = self.cacheList->_head;
     while (node->_time + self.releaseTime < current) {
         [self.cacheList removeNode:node];
+        _cache_node *holded = node;
+        CFArrayAppendValue(holder, (__bridge const void *)(holded));
         node = node->_next;
     }
     
     OSSpinLockUnlock(&_lock);
+    
+    if (self.releaseAsynchronously) {
+        dispatch_queue_t queue = self.releaseOnMainThread ? dispatch_get_main_queue() : dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+        dispatch_async(queue, ^{
+            CFRelease(holder);
+        });
+    } else if (self.releaseOnMainThread && !pthread_main_np()) {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            CFRelease(holder);
+        });
+    } else {
+        CFRelease(holder);
+    }
 }
 
 - (void)cleanCacheBySize {
