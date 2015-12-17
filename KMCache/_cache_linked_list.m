@@ -55,7 +55,7 @@
     
     _cache_node *old = [self nodeForKey:key];
     
-    if (!old) {
+    if (old) {
         old->_value = value;
         old->_time = CACurrentMediaTime();
         [self refreshNode:old];

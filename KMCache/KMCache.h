@@ -19,11 +19,11 @@ typedef NS_OPTIONS(int, KMCacheType) {
      */
     KMCacheTypeDefualt       = 0,
     /**
-     *  depend on time, ignore size
+     *  depend on time
      */
     KMCacheTypeReleaseByTime = 1 << 1,
     /**
-     *  depend on size, ignore time
+     *  depend on size
      */
     KMCacheTypeReleaseBySize = 1 << 2
 };
@@ -35,12 +35,16 @@ typedef NS_OPTIONS(int, KMCacheType) {
 - (instancetype)initWithType:(KMCacheType)type;
 
 /**
+ *  Seconds that auto runing clean method, default is 5
+ */
+@property (nonatomic, assign) NSTimeInterval autoCleanInterval;
+/**
  *  The max number of cached objects' count. By default, the max count is unlimited (INT_MAX).
  */
 @property (nonatomic, assign) int maxCount;
 
 /**
- *  The max size of cached objects, unit is 'Mb'. By default, the max size is unlimited(NSIntegerMax).
+ *  The max size of cached objects, unit is 'Mb'. By default, the max size is unlimited(NSIntegerMax). Only avialble with type .ReleaseBySize.
  */
 @property (nonatomic, assign) NSUInteger maxSize;
 /**
@@ -55,6 +59,10 @@ typedef NS_OPTIONS(int, KMCacheType) {
  *  Clean caches asynchronously, default is YES;
  */
 @property (nonatomic, assign) BOOL releaseAsynchronously;
+/**
+ *  When receive a memory warning, should auto clean the cache. Default is YES;
+ */
+@property (nonatomic, assign) BOOL shouldAutoReleaseWhenReceiveMemoryWarning;
 
 /**
  *  Cache object.

@@ -25,6 +25,8 @@
 {
     OSSpinLock _lock;
     NSUInteger _maxByte;
+    
+    dispatch_queue_t _queue;
 }
 
 - (instancetype)init {
@@ -33,9 +35,13 @@
         self.maxCount = INT_MAX;
         self.maxSize = NSIntegerMax;
         _lock = OS_SPINLOCK_INIT;
+        self.autoCleanInterval = 5;
         
         self.releaseOnMainThread = NO;
         self.releaseAsynchronously = YES;
+        self.shouldAutoReleaseWhenReceiveMemoryWarning = YES;
+        
+        _queue = dispatch_queue_create("com.kleinmioke.memorycache", DISPATCH_QUEUE_SERIAL);
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_didReceiveMemoryWarning) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     }
@@ -54,6 +60,12 @@
 }
 
 - (BOOL)setCacheObject:(id)object forKey:(NSString *)key {
+    
+//    static dispatch_once_t onceToken;
+//    dispatch_once(&onceToken, ^{
+//        [self cleanRecursively];
+//    });
+    
     OSSpinLockLock(&_lock);
     @try {
         [self.cacheList appendNewNodeWithValue:object key:key];
@@ -95,9 +107,11 @@
 - (void)clean {
     if (self.type == KMCacheTypeDefualt) {
         return;
-    } else if (self.type == KMCacheTypeReleaseByTime) {
+    }
+    if (self.type & KMCacheTypeReleaseByTime) {
         [self cleanCacheByTime];
-    } else if (self.type == KMCacheTypeReleaseBySize) {
+    }
+    if (self.type & KMCacheTypeReleaseBySize) {
         [self cleanCacheBySize];
     }
 }
@@ -106,6 +120,20 @@
     
     OSSpinLockLock(&_lock);
     [self.cacheList removeAllNodes];
+    OSSpinLockUnlock(&_lock);
+}
+
+- (void)cleanCacheByCount {
+    
+    if (self.maxCount >= self.cacheList->_count) {
+        return;
+    }
+    
+    OSSpinLockLock(&_lock);
+    if (self.maxCount == 0) {
+        [self cleanAllCache];
+        return;
+    }
     OSSpinLockUnlock(&_lock);
 }
 
@@ -118,17 +146,25 @@
     CFTimeInterval current = CACurrentMediaTime();
     CFMutableArrayRef holder = CFArrayCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeArrayCallBacks);
     
-    OSSpinLockLock(&_lock);
+//    OSSpinLockLock(&_lock);
     
     _cache_node *node = self.cacheList->_head;
     while (node->_time + self.releaseTime < current) {
-        [self.cacheList removeNode:node];
-        _cache_node *holded = node;
-        CFArrayAppendValue(holder, (__bridge const void *)(holded));
-        node = node->_next;
+        
+        if (OSSpinLockTry(&_lock)) {
+            
+            [self.cacheList removeNode:node];
+            _cache_node *holded = node;
+            CFArrayAppendValue(holder, (__bridge const void *)(holded));
+            node = node->_next;
+            
+            OSSpinLockUnlock(&_lock);
+        } else {
+            usleep(10 * 1000);
+        }
     }
     
-    OSSpinLockUnlock(&_lock);
+//    OSSpinLockUnlock(&_lock);
     
     if (self.releaseAsynchronously) {
         dispatch_queue_t queue = self.releaseOnMainThread ? dispatch_get_main_queue() : dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
@@ -147,6 +183,13 @@
 - (void)cleanCacheBySize {
     
 }
+
+//- (void)cleanRecursively {
+//    
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.autoCleanInterval * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        
+//    });
+//}
 
 - (_cache_linked_list *)cacheList {
     
@@ -173,7 +216,9 @@
 
 - (void)_didReceiveMemoryWarning {
     
-    [self cleanAllCache];
+    if (self.shouldAutoReleaseWhenReceiveMemoryWarning) {
+        [self cleanAllCache];
+    }
 }
 
 #pragma mark - Getter and setter
