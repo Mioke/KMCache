@@ -13,17 +13,6 @@
 #import <libkern/OSAtomic.h>
 #import <pthread.h>
 
-@interface _cache_node : NSObject
-{
-    @package
-    NSTimeInterval _time;
-    id _key;
-    id _value;
-    __unsafe_unretained _cache_node *_prev;
-    __unsafe_unretained _cache_node *_next;
-}
-@end
-
 @implementation _cache_node
 @end
 
@@ -64,6 +53,15 @@
 }
 
 - (void)appendNewNodeWithValue:(id)value key:(id)key {
+    
+    _cache_node *old = [self nodeForKey:key];
+    
+    if (!old) {
+        old->_value = value;
+        old->_time = CACurrentMediaTime();
+        [self refreshNode:old];
+        return;
+    }
     
     _cache_node *node = [_cache_node new];
     node->_time = CACurrentMediaTime();
@@ -109,7 +107,7 @@
     return removedNode;
 }
 
-- (void)freshNode:(_cache_node *)node {
+- (void)refreshNode:(_cache_node *)node {
     
     node->_time = CACurrentMediaTime();
     
@@ -150,6 +148,17 @@
     _head = nil;
     _tail = nil;
     _count = 0;
+}
+
+- (nullable _cache_node *)nodeForKey:(id)key {
+    
+    _cache_node *node = CFDictionaryGetValue(_dic, (__bridge const void *)(key));
+    if (!node) {
+        return nil;
+    }
+    [self refreshNode:node];
+    
+    return node;
 }
 
 @end

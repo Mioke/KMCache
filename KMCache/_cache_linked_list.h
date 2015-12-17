@@ -10,7 +10,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class _cache_node;
+@interface _cache_node : NSObject
+{
+    @package
+    NSTimeInterval _time;
+    id _key;
+    id _value;
+    __unsafe_unretained _cache_node *_prev;
+    __unsafe_unretained _cache_node *_next;
+}
+@end
 
 @interface _cache_linked_list : NSObject
 {
@@ -27,12 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)appendNewNodeWithValue:(id)value key:(id)key;
 
 - (void)removeNode:(_cache_node *)node;
-
 - (nullable _cache_node *)removeHeadNode;
-
 - (void)removeAllNodes;
 
-- (void)freshNode:(_cache_node *)node;
+- (void)refreshNode:(_cache_node *)node;
+- (nullable _cache_node *)nodeForKey:(id)key;
 
 @end
 
