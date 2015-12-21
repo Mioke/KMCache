@@ -15,8 +15,6 @@
 
 @interface KMCache ()
 
-//@property (nonatomic, strong) NSMutableDictionary *cache;
-
 @property (nonatomic, strong) _cache_linked_list *cacheList;
 
 @end
@@ -33,6 +31,8 @@
 - (instancetype)init {
     if (self = [super init]) {
         _type = KMCacheTypeDefualt;
+        _queue = dispatch_queue_create("com.kleinmioke.memorycache", DISPATCH_QUEUE_SERIAL);
+        
         self.maxCount = INT_MAX;
         self.maxSize = NSIntegerMax;
         _lock = OS_SPINLOCK_INIT;
@@ -42,7 +42,6 @@
         self.releaseAsynchronously = YES;
         self.shouldAutoReleaseWhenReceiveMemoryWarning = YES;
         
-        _queue = dispatch_queue_create("com.kleinmioke.memorycache", DISPATCH_QUEUE_SERIAL);
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_didReceiveMemoryWarning) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     }
@@ -107,17 +106,20 @@
 
 - (void)clean {
     
-    [self cleanCacheByCount];
+    dispatch_async(_queue, ^{
     
-    if (self.type == KMCacheTypeDefualt) {
-        return;
-    }
-    if (self.type & KMCacheTypeReleaseByTime) {
-        [self cleanCacheByTime];
-    }
-    if (self.type & KMCacheTypeReleaseBySize) {
-        [self cleanCacheBySize];
-    }
+        [self cleanCacheByCount];
+        
+        if (self.type == KMCacheTypeDefualt) {
+            return;
+        }
+        if (self.type & KMCacheTypeReleaseByTime) {
+            [self cleanCacheByTime];
+        }
+        if (self.type & KMCacheTypeReleaseBySize) {
+            [self cleanCacheBySize];
+        }
+    });
 }
 
 - (void)cleanAllCache {
@@ -147,7 +149,7 @@
             CFArrayAppendValue(holder, (__bridge const void *)(head));
             OSSpinLockUnlock(&_lock);
         } else {
-            usleep(10 * 1000);
+            usleep(10000);
         }
     }
     [self releaseObj:holder];
@@ -173,7 +175,7 @@
             node = node->_next;
             OSSpinLockUnlock(&_lock);
         } else {
-            usleep(10 * 1000);
+            usleep(10000);
         }
     }
     [self releaseObj:holder];
@@ -270,6 +272,7 @@
         [_timer invalidate];
         _timer = nil;
     }
+    
     _timer = [NSTimer scheduledTimerWithTimeInterval:_autoCleanInterval target:self selector:@selector(clean) userInfo:nil repeats:YES];
 }
 

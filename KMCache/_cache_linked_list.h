@@ -26,8 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
     @package
     CFMutableDictionaryRef _dic;
-    __weak _cache_node *_head;
-    __weak _cache_node *_tail;
+    __unsafe_unretained _cache_node *_head;
+    __unsafe_unretained _cache_node *_tail;
     int _count;
     BOOL _releaseOnMainThread;
     BOOL _releaseAsynchronously;

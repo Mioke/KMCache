@@ -94,7 +94,7 @@
     if (!_head) { return nil; }
     
     _cache_node *removedNode = _head;
-    CFDictionaryRemoveValue(_dic, (__bridge const void *)(removedNode->_key));
+    CFDictionaryRemoveValue(_dic, (__bridge const void *)(_head->_key));
     
     if (_head == _tail) {
         _head = _tail = nil;
