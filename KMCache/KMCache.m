@@ -27,6 +27,7 @@
     NSUInteger _maxByte;
     
     dispatch_queue_t _queue;
+    NSTimer *_timer;
 }
 
 - (instancetype)init {
@@ -59,7 +60,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (BOOL)setCacheObject:(id)object forKey:(NSString *)key {
+- (BOOL)setCacheObject:(id<NSObject>)object forKey:(id<NSObject>)key {
     
 //    static dispatch_once_t onceToken;
 //    dispatch_once(&onceToken, ^{
@@ -79,7 +80,7 @@
                     [head description];
                 });
             } else if (self.releaseOnMainThread && !pthread_main_np()) {
-                dispatch_sync(dispatch_get_main_queue(), ^{
+                dispatch_async(dispatch_get_main_queue(), ^{
                     [head description];
                 });
             }
@@ -105,6 +106,9 @@
 }
 
 - (void)clean {
+    
+    [self cleanCacheByCount];
+    
     if (self.type == KMCacheTypeDefualt) {
         return;
     }
@@ -129,12 +133,24 @@
         return;
     }
     
-    OSSpinLockLock(&_lock);
     if (self.maxCount == 0) {
         [self cleanAllCache];
         return;
     }
-    OSSpinLockUnlock(&_lock);
+    
+    CFMutableArrayRef holder = CFArrayCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeArrayCallBacks);
+    
+    while (self.cacheList->_count > self.maxCount) {
+        
+        if (OSSpinLockTry(&_lock)) {
+            _cache_node *head = [self.cacheList removeHeadNode];
+            CFArrayAppendValue(holder, (__bridge const void *)(head));
+            OSSpinLockUnlock(&_lock);
+        } else {
+            usleep(10 * 1000);
+        }
+    }
+    [self releaseObj:holder];
 }
 
 - (void)cleanCacheByTime {
@@ -146,8 +162,6 @@
     CFTimeInterval current = CACurrentMediaTime();
     CFMutableArrayRef holder = CFArrayCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeArrayCallBacks);
     
-//    OSSpinLockLock(&_lock);
-    
     _cache_node *node = self.cacheList->_head;
     while (node->_time + self.releaseTime < current) {
         
@@ -157,27 +171,12 @@
             _cache_node *holded = node;
             CFArrayAppendValue(holder, (__bridge const void *)(holded));
             node = node->_next;
-            
             OSSpinLockUnlock(&_lock);
         } else {
             usleep(10 * 1000);
         }
     }
-    
-//    OSSpinLockUnlock(&_lock);
-    
-    if (self.releaseAsynchronously) {
-        dispatch_queue_t queue = self.releaseOnMainThread ? dispatch_get_main_queue() : dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
-        dispatch_async(queue, ^{
-            CFRelease(holder);
-        });
-    } else if (self.releaseOnMainThread && !pthread_main_np()) {
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            CFRelease(holder);
-        });
-    } else {
-        CFRelease(holder);
-    }
+    [self releaseObj:holder];
 }
 
 - (void)cleanCacheBySize {
@@ -262,6 +261,34 @@
     OSSpinLockLock(&_lock);
     self.cacheList->_releaseAsynchronously = releaseAsynchronously;
     OSSpinLockUnlock(&_lock);
+}
+
+- (void)setAutoCleanInterval:(NSTimeInterval)autoCleanInterval {
+    _autoCleanInterval = autoCleanInterval;
+    
+    if (_timer != nil) {
+        [_timer invalidate];
+        _timer = nil;
+    }
+    _timer = [NSTimer scheduledTimerWithTimeInterval:_autoCleanInterval target:self selector:@selector(clean) userInfo:nil repeats:YES];
+}
+
+#pragma mark - Other functions
+
+- (void)releaseObj:(CFTypeRef)holder {
+    
+    if (self.releaseAsynchronously) {
+        dispatch_queue_t queue = self.releaseOnMainThread ? dispatch_get_main_queue() : dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+        dispatch_async(queue, ^{
+            CFRelease(holder);
+        });
+    } else if (self.releaseOnMainThread && !pthread_main_np()) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            CFRelease(holder);
+        });
+    } else {
+        CFRelease(holder);
+    }
 }
 
 @end

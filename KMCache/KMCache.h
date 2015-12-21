@@ -72,11 +72,13 @@ typedef NS_OPTIONS(int, KMCacheType) {
  *
  *  @return succeed or not
  */
-- (BOOL)setCacheObject:(id)object forKey:(NSString *)key;
+- (BOOL)setCacheObject:(id<NSObject>)object forKey:(id<NSObject>)key;
 /**
  *  The size of cached data
  */
 - (NSUInteger)size;
+
+- (void)cleanAllCache;
 
 @end
 
