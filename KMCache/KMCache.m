@@ -34,7 +34,7 @@
         _queue = dispatch_queue_create("com.kleinmioke.memorycache", DISPATCH_QUEUE_SERIAL);
         
         self.maxCount = INT_MAX;
-        self.maxSize = NSIntegerMax;
+        self.maxSize = NSUIntegerMax;
         _lock = OS_SPINLOCK_INIT;
         self.autoCleanInterval = 5;
         

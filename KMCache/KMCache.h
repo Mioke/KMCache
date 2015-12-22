@@ -44,7 +44,7 @@ typedef NS_OPTIONS(int, KMCacheType) {
 @property (nonatomic, assign) int maxCount;
 
 /**
- *  The max size of cached objects, unit is 'Mb'. By default, the max size is unlimited(NSIntegerMax). Only avialble with type .ReleaseBySize.
+ *  The max size of cached objects. By default, the max size is unlimited(NSIntegerMax). Only avialble with type .ReleaseBySize.
  */
 @property (nonatomic, assign) NSUInteger maxSize;
 /**
