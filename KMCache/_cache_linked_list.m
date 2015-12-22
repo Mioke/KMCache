@@ -53,11 +53,17 @@
 
 - (void)appendNewNodeWithValue:(id)value key:(id)key {
     
+    [self appendNewNodeWithValue:value key:key size:0];
+}
+
+- (void)appendNewNodeWithValue:(id)value key:(id)key size:(NSUInteger)size {
+    
     _cache_node *old = [self nodeForKey:key];
     
     if (old) {
         old->_value = value;
         old->_time = CACurrentMediaTime();
+        old->_size = size;
         [self refreshNode:old];
         return;
     }
@@ -66,6 +72,7 @@
     node->_time = CACurrentMediaTime();
     node->_value = value;
     node->_key = key;
+    node->_size = size;
     
     [self appendNode:node];
 }

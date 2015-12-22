@@ -59,16 +59,11 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (BOOL)setCacheObject:(id<NSObject>)object forKey:(id<NSObject>)key {
-    
-//    static dispatch_once_t onceToken;
-//    dispatch_once(&onceToken, ^{
-//        [self cleanRecursively];
-//    });
+- (BOOL)setCacheObject:(id<NSObject>)object ofSize:(NSUInteger)size forKey:(id<NSObject>)key {
     
     OSSpinLockLock(&_lock);
     @try {
-        [self.cacheList appendNewNodeWithValue:object key:key];
+        [self.cacheList appendNewNodeWithValue:object key:key size:size];
         
         if (self.cacheList->_count > self.maxCount) {
             _cache_node *head = [self.cacheList removeHeadNode];
@@ -91,6 +86,11 @@
         OSSpinLockUnlock(&_lock);
         return NO;
     }
+}
+
+- (BOOL)setCacheObject:(id<NSObject>)object forKey:(id<NSObject>)key {
+    
+    return [self setCacheObject:object ofSize:0 forKey:key];
 }
 
 - (nullable id)objectForKey:(id)key {

@@ -74,6 +74,26 @@ typedef NS_OPTIONS(int, KMCacheType) {
  */
 - (BOOL)setCacheObject:(id<NSObject>)object forKey:(id<NSObject>)key;
 /**
+ *  Cache object
+ *
+ *  @attention  size option only worked in type .ReleaseBySize
+ *
+ *  @param object object need to cache
+ *  @param size   custom size of object
+ *  @param key    key of object
+ *
+ *  @return succeed or not
+ */
+- (BOOL)setCacheObject:(id<NSObject>)object ofSize:(NSUInteger)size forKey:(id<NSObject>)key;
+/**
+ *  Get object from a key
+ *
+ *  @param key key of objcect
+ *
+ *  @return The object of the key, can be nil.
+ */
+- (nullable id)objectForKey:(id)key;
+/**
  *  The size of cached data
  */
 - (NSUInteger)size;

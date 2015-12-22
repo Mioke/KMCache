@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
     @package
     NSTimeInterval _time;
+    NSUInteger _size;
+    
     id _key;
     id _value;
     __unsafe_unretained _cache_node *_prev;
@@ -35,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)appendNode:(_cache_node *)node;
 - (void)appendNewNodeWithValue:(id)value key:(id)key;
+- (void)appendNewNodeWithValue:(id)value key:(id)key size:(NSUInteger)size;
 
 - (void)removeNode:(_cache_node *)node;
 - (nullable _cache_node *)removeHeadNode;
