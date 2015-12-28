@@ -107,7 +107,7 @@
 - (void)clean {
     
     dispatch_async(_queue, ^{
-    
+        
         [self cleanCacheByCount];
         
         if (self.type == KMCacheTypeDefualt) {
@@ -186,9 +186,9 @@
 }
 
 //- (void)cleanRecursively {
-//    
+//
 //    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.autoCleanInterval * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//        
+//
 //    });
 //}
 
@@ -210,7 +210,7 @@
     [archiver finishEncoding];
     OSSpinLockUnlock(&_lock);
     
-    NSLog(@"%ld", data.length);
+//    NSLog(@"%ld", data.length);
     
     return data.length;
 }
@@ -233,7 +233,7 @@
 }
 
 //- (BOOL)releaseOnMainThread {
-//    
+//
 //    OSSpinLockLock(&_lock);
 //    BOOL releaseOnMainThread = self.cacheList->_releaseOnMainThread;
 //    OSSpinLockUnlock(&_lock);
@@ -295,5 +295,3 @@
 }
 
 @end
-
-

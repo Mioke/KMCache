@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7034C5C81C31230D00F1348F /* KMCache.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 7034C5C71C31230D00F1348F /* KMCache.podspec */; };
 		A75694E51C214C8900C28DAD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A75694E41C214C8900C28DAD /* main.m */; };
 		A75694E81C214C8900C28DAD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A75694E71C214C8900C28DAD /* AppDelegate.m */; };
 		A75694EB1C214C8A00C28DAD /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A75694EA1C214C8A00C28DAD /* ViewController.m */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7034C5C71C31230D00F1348F /* KMCache.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = KMCache.podspec; path = ../KMCache.podspec; sourceTree = "<group>"; };
 		A75694E01C214C8900C28DAD /* KMCacheDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KMCacheDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A75694E41C214C8900C28DAD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A75694E61C214C8900C28DAD /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -48,6 +50,7 @@
 		A75694D71C214C8800C28DAD = {
 			isa = PBXGroup;
 			children = (
+				7034C5C71C31230D00F1348F /* KMCache.podspec */,
 				A75694FA1C214CB300C28DAD /* KMCache */,
 				A75694E21C214C8900C28DAD /* KMCacheDemo */,
 				A75694E11C214C8900C28DAD /* Products */,
@@ -158,6 +161,7 @@
 				A75694F31C214C8A00C28DAD /* LaunchScreen.storyboard in Resources */,
 				A75694F01C214C8A00C28DAD /* Assets.xcassets in Resources */,
 				A75694EE1C214C8A00C28DAD /* Main.storyboard in Resources */,
+				7034C5C81C31230D00F1348F /* KMCache.podspec in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,6 +323,7 @@
 				A75694F91C214C8A00C28DAD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
