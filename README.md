@@ -5,6 +5,7 @@ Inspired by [YYCache](https://github.com/ibireme/YYCache).
 
 1. Clone or download the zip into your computer, copy the `KMCache` folder into your project
 2. If you are using cocoapods:
+
    ```ruby
    pod "KMCache"
    ```
