@@ -38,6 +38,7 @@
         _lock = OS_SPINLOCK_INIT;
         self.autoCleanInterval = 5;
         
+        self.needRefreshCacheWhenUsed = YES;
         self.releaseOnMainThread = NO;
         self.releaseAsynchronously = YES;
         self.shouldAutoReleaseWhenReceiveMemoryWarning = YES;
@@ -274,6 +275,12 @@
     }
     
     _timer = [NSTimer scheduledTimerWithTimeInterval:_autoCleanInterval target:self selector:@selector(clean) userInfo:nil repeats:YES];
+}
+
+- (void)setNeedRefreshCacheWhenUsed:(BOOL)needRefreshCacheWhenUsed {
+    
+    _needRefreshCacheWhenUsed = needRefreshCacheWhenUsed;
+    self.cacheList->_shouldRefreshNodeWhenUsed = _needRefreshCacheWhenUsed;
 }
 
 #pragma mark - Other functions

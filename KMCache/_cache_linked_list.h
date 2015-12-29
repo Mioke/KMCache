@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
     int _count;
     BOOL _releaseOnMainThread;
     BOOL _releaseAsynchronously;
+    BOOL _shouldRefreshNodeWhenUsed;
 }
 
 - (void)appendNode:(_cache_node *)node;

@@ -52,6 +52,10 @@ typedef NS_OPTIONS(int, KMCacheType) {
  */
 @property (nonatomic, assign) NSTimeInterval releaseTime;
 /**
+ *  When use the cache again, should refresh the node(time) again or not, default is YES.
+ */
+@property (nonatomic, assign) BOOL needRefreshCacheWhenUsed;
+/**
  *  Clean caches on main thread, default is NO;
  */
 @property (nonatomic, assign) BOOL releaseOnMainThread;

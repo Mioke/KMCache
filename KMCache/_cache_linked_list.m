@@ -28,6 +28,7 @@
         // by default
         _releaseOnMainThread = NO;
         _releaseAsynchronously = YES;
+        _shouldRefreshNodeWhenUsed = YES;
     }
     return self;
 }
@@ -162,8 +163,9 @@
     if (!node) {
         return nil;
     }
-    [self refreshNode:node];
-    
+    if (_shouldRefreshNodeWhenUsed) {
+        [self refreshNode:node];
+    }
     return node;
 }
 
