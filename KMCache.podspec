@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "KMCache"
-  s.version          = "0.1.6"
+  s.version          = "0.1.7"
   s.summary          = "A high performance cache with key-value memory storage."
 
 # This description is used to generate tags and improve search results.
@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
   s.homepage         = "https://github.com/Mioke/KMCache"
   # s.screenshots     = "www.example.com/screenshots_1", "www.example.com/screenshots_2"
   s.license          = 'MIT'
-  s.author           = { "Mioke" => "565408238@qq.com" }
+  s.author           = { "Mioke" => "mioke0428@gmail.com" }
   s.source           = { :git => "https://github.com/Mioke/KMCache.git", :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 

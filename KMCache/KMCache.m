@@ -167,19 +167,17 @@
     
     _cache_node *node = self.cacheList->_head;
     
-    if (node) {
-        while (node->_time + self.releaseTime < current) {
+    while (node && (node->_time + self.releaseTime < current)) {
+        
+        if (OSSpinLockTry(&_lock)) {
             
-            if (OSSpinLockTry(&_lock)) {
-                
-                [self.cacheList removeNode:node];
-                _cache_node *holded = node;
-                CFArrayAppendValue(holder, (__bridge const void *)(holded));
-                node = node->_next;
-                OSSpinLockUnlock(&_lock);
-            } else {
-                usleep(10000);
-            }
+            [self.cacheList removeNode:node];
+            _cache_node *holded = node;
+            CFArrayAppendValue(holder, (__bridge const void *)(holded));
+            node = node->_next;
+            OSSpinLockUnlock(&_lock);
+        } else {
+            usleep(10000);
         }
     }
     [self releaseObj:holder];
