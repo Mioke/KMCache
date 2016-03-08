@@ -161,7 +161,6 @@
     if (self.type != KMCacheTypeReleaseByTime || self.cacheList->_count == 0) {
         return;
     }
-    
     CFTimeInterval current = CACurrentMediaTime();
     CFMutableArrayRef holder = CFArrayCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeArrayCallBacks);
     
