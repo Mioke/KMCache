@@ -21,8 +21,10 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    self.cache = [[KMCache alloc] initWithType:KMCacheTypeDefualt];
+    self.cache = [[KMCache alloc] initWithType:KMCacheTypeReleaseByTime];
     self.cache.maxCount = 50;
+    
+    self.cache.releaseTime = 20;
 }
 - (IBAction)click:(id)sender {
     
@@ -35,6 +37,9 @@
             NSLog(@"insert : %d: %d", i, i);
         }
     });
+}
+- (IBAction)size:(id)sender {
+    NSLog(@"%lu", (unsigned long)[self.cache size]);
 }
 
 - (void)didReceiveMemoryWarning {
